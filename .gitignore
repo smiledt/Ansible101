@@ -1,0 +1,8 @@
+# Git Ignore file
+
+# We don't want the miscellaneous .vagrant files
+.vagrant/
+
+# We also don't want the .DS_Store
+.DS_Store
+
