@@ -1,0 +1,7 @@
+---
+download_dir: /tmp
+solr_dir: /opt/solr
+solr_version: "8.7.0"
+solr_checksum: sha512:403fe4f0510deece82f65654fbe947bcdc38966ac36965597c23932daff233ab72a1644c6c132d29d76e178375f4048d79a0e746d999beb780e2bfab4648be81
+
+solr_download: https://mirrors.ocf.berkeley.edu/apache/lucene/solr/8.7.0/solr-8.7.0-src.tgz

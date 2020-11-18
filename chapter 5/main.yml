@@ -1,0 +1,63 @@
+---
+- hosts: solr
+  become: true
+
+  vars_files:
+    - vars.yml
+  
+  #  On Ubuntu we need to update cache. 
+  pre_tasks:
+    - name: Update apt cache if needed.
+      apt: update_cache=true cache_valid_time=3600
+
+  handlers: 
+    - name: restart solr
+      service: name=solr state=restarted
+
+  tasks:
+    - name: Install Java.
+      apt: name=openjdk-8-jdk state=present
+    
+    - name: Download solr. 
+      get_url: 
+        url: "{{ solr_download }}"
+        dest: "{{ download_dir }}/solr-{{ solr_version }}.tgz"
+        #  Check the downloaded file 
+        checksum: "{{ solr_checksum }}"
+
+    - name: Unpack Solr. 
+      unarchive: 
+        src: "{{ download_dir }}/solr-{{ solr_version }}.tgz"
+        dest: "{{ download_dir }}"
+        remote_src: true
+        creates: "{{ download_dir }}/solr-{{ solr_version }}/README.txt"
+  
+  
+    - name: Ensure Solr Folder is present. 
+      stat:
+        path: "{{ download_dir }}/solr-{{ solr_version }}/solr/bin/"
+      register: pres
+      #  we need to test both that p.stat.isdir actually exists, and also that it's set to true.
+    - debug:
+        msg: "Path {{ download_dir }}/solr-{{ solr_version }}/solr/bin/ exists and is a directory."
+      when: pres.stat.isdir is defined and pres.stat.isdir
+
+    - debug: 
+        msg: "Script is {{  download_dir }}/solr-{{ solr_version }}/solr/bin/install_solr_service.sh"
+    
+    - name: Ensure Solr installation script is executable. 
+      file: path="{{ download_dir }}/solr-{{ solr_version }}/solr/bin/install_solr_service.sh" mode=a+x state=touch
+
+    - name: Run Solr installation script. 
+      command: >
+        {{ download_dir }}/solr-{{ solr_version }}/solr/bin/install_solr_service.sh
+        {{ download_dir }}/solr-{{ solr_version }}.tgz
+        -i /opt
+        -d /var/solr
+        -u solr
+        -s solr
+        -p 8983
+        creates={{ solr_dir }}/bin/solr
+
+    - name: Ensure solr is started and enabled at boot. 
+      service: name=solr enabled=yes
