@@ -1,0 +1,36 @@
+---
+- name: Install Apache
+  hosts: centos
+  become: true
+
+  handlers:
+    - name: restart apache
+      service:
+        name: httpd
+        state: restarted
+
+  tasks:
+    - name: Install Apache
+      yum:
+        name:
+          - httpd
+          - httpd-devel
+        state: present
+
+    - name: Copy configuration files.
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: root
+        group: root
+        mode: 0644
+      with_items:
+        - src: files/test.conf
+          dest: /etc/httpd/conf.d/test.conf
+      notify: restart apache
+
+    - name: Ensure Apache is started and configure it to run at boot
+      service: 
+        name: httpd
+        state: started
+        enabled: yes
