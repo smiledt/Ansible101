@@ -3,18 +3,48 @@
   hosts: centos
   become: true
 
+  vars:
+    apache_package: apache2
+    apache_service: apache2
+    apache_config_dir: /etc/apache2/sites-enabled
+
   handlers:
     - name: restart apache
       service:
         name: httpd
         state: restarted
+    
+    - name: restart memcached
+      service:
+        name: memcached
+        state: restarted
 
   tasks:
+    - name: Download a file. 
+      get_url: 
+        url: http://ipv4.download.thinkbroadband.com/10MB.zip
+        dest: /tmp
+      
+   
+    - name: Add an environment variable to the remote user's shell
+      lineinfile:
+        dest: "/etc/environment"
+        regexp: '^ENV_VAR= '
+        line: 'ENV_VAR=value' 
+
+    - name: Get the value of an environment variable.
+      shell: 'source ~/.bash_profile && echo $ENV_VAR'
+      # This shell command echos something to the screen, we save that to a variable with register
+      register: foo
+      
+    - debug: msg='The variable is {{ foo.stdout }}'
+
     - name: Install Apache
       yum:
         name:
           - httpd
           - httpd-devel
+          - memcached
         state: present
 
     - name: Copy configuration files.
@@ -27,7 +57,9 @@
       with_items:
         - src: files/test.conf
           dest: /etc/httpd/conf.d/test.conf
-      notify: restart apache
+      notify:
+        - restart apache
+        - restart memcached
 
     - name: Ensure Apache is started and configure it to run at boot
       service: 
