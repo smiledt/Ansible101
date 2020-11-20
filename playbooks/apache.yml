@@ -1,29 +1,30 @@
 ---
 - name: Install Apache
-  hosts: centos
+  hosts: all
   become: true
 
-  vars:
-    apache_package: apache2
-    apache_service: apache2
-    apache_config_dir: /etc/apache2/sites-enabled
+  pre_tasks:
+    - name: Load variable files. 
+      include_vars: "{{ item }}"
+      with_first_found:
+        - "vars/apache_{{ ansible_os_family }}.yml"
+        - "vars/apache_default.yml"
 
   handlers:
     - name: restart apache
       service:
-        name: httpd
+        name: "{{ item }}"
         state: restarted
+      with_items:
+        - apache_service
     
-    - name: restart memcached
-      service:
-        name: memcached
-        state: restarted
 
   tasks:
-    - name: Download a file. 
-      get_url: 
-        url: http://ipv4.download.thinkbroadband.com/10MB.zip
-        dest: /tmp
+  # Commented out because this takes a while. 
+  #   - name: Download a file. 
+  #     get_url: 
+  #       url: http://ipv4.download.thinkbroadband.com/10MB.zip
+  #       dest: /tmp
       
    
     - name: Add an environment variable to the remote user's shell
@@ -35,34 +36,39 @@
     - name: Get the value of an environment variable.
       shell: 'source ~/.bash_profile && echo $ENV_VAR'
       # This shell command echos something to the screen, we save that to a variable with register
+      # This only saves something on centos
       register: foo
+      when:
+        - ansible_facts['distribution'] == "CentOS"
       
     - debug: msg='The variable is {{ foo.stdout }}'
+      when:
+        - ansible_facts['distribution'] == "CentOS"
 
     - name: Install Apache
-      yum:
-        name:
-          - httpd
-          - httpd-devel
-          - memcached
+      package:
+        name: "{{ item }}"
         state: present
+      with_items:
+        - "{{ apache_package }}"
 
     - name: Copy configuration files.
       copy:
         src: "{{ item.src }}"
-        dest: "{{ item.dest }}"
+        dest: "{{ apache_config_dir }}"
         owner: root
         group: root
         mode: 0644
       with_items:
         - src: files/test.conf
-          dest: /etc/httpd/conf.d/test.conf
+          
       notify:
         - restart apache
-        - restart memcached
 
     - name: Ensure Apache is started and configure it to run at boot
       service: 
-        name: httpd
+        name: "{{ item }}"
         state: started
         enabled: yes
+      with_items:
+       - "{{ apache_service }}"

@@ -1,0 +1,9 @@
+---
+apache_package:
+  - apache2
+  - memcached
+  - libmemcached-tools
+apache_service: 
+  - apache2
+  - memcached
+apache_config_dir: /etc/apache2/sites-enabled
