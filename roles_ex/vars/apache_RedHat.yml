@@ -1,0 +1,8 @@
+---
+apache_package:
+  - httpd
+  - memcached
+apache_service: 
+  - httpd
+  - memcached
+apache_config_dir: /etc/httpd/conf.d
