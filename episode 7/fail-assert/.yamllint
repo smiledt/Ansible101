@@ -1,0 +1,11 @@
+---
+extends: default
+# This file is to display the different yamllint options
+
+rules:
+  truthy:
+    allowed-values:
+      - 'true'
+      - 'false'
+      - 'yes'
+      - 'no'
