@@ -4,7 +4,7 @@
   become: true
 
   pre_tasks:
-    - name: Load variable files. 
+    - name: Load variable files.
       include_vars: "{{ item }}"
       with_first_found:
         - "vars/apache_{{ ansible_os_family }}.yml"
@@ -17,8 +17,7 @@
         state: restarted
       with_items:
         - apache_service
-    
+
 
   tasks:
    - import_tasks: tasks/apache.yml
-   
