@@ -7,8 +7,8 @@ platforms:
   - name: instance
 #   image: docker.io/pycontribs/centos:8
 #   this will FAIL because it cannot run systemd in this container
-    image: geerlingguy/docker-centos8-ansible:latest
-    command: ""
+    image: "geerlingguy/docker-${MOLECULE_DISTRO:-centos8}-ansible:latest"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     privileged: true
