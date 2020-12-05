@@ -4,6 +4,10 @@
   connection: local
   gather_facts: false
   no_log: "{{ molecule_no_log }}"
+
+  vars: 
+    molecule_no_log: false
+
   tasks:
 
     # TODO: Developer must implement and populate 'server' variable
