@@ -33,9 +33,19 @@
     mode: 0644
   with_items:
     - src: files/test.conf
-
   notify:
     - restart apache
+
+- name: Copy a demo webpage.
+  copy:
+    content: |
+      <html>
+      <head><title>Hello world!</title><head>
+      <body>Hello world!</body>
+      </html>
+    dest: "/var/www/html/index.html"
+    mode: '0644'
+  notify: restart apache
 
 - name: Ensure Apache is started and configure it to run at boot
   service:
@@ -44,3 +54,8 @@
     enabled: yes
   with_items:
     - "{{ apache_service }}"
+
+- name: Verify Apache is serving web requests.
+  uri:
+    url: http://localhost/
+    status_code: 200
